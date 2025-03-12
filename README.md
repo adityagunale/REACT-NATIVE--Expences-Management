@@ -2,7 +2,6 @@
 
 A React Native mobile application built with Expo for managing personal finances. Track your income and expenses, view your balance, and manage your financial transactions.
 
-## Features
 
 - **User Authentication**: Secure login and registration system
 - **Transaction Management**: Add, edit, and delete income and expense transactions
