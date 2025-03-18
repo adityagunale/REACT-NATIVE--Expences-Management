@@ -12,12 +12,14 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { CompositeNavigationProp, RouteProp } from '@react-navigation/native';
+import { RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { MainStackParamList, MainTabsParamList } from '../navigation/AppNavigator';
+import { 
+  MainStackParamList, 
+  MainTabsParamList,
+  AddTransactionScreenNavigationProp 
+} from '../navigation/types';
 import { 
   addTransaction, 
   updateTransaction, 
@@ -27,11 +29,6 @@ import {
   TransactionType
 } from '../redux/slices/transactionSlice';
 import { RootState, AppDispatch } from '../redux/store';
-
-type AddTransactionScreenNavigationProp = CompositeNavigationProp<
-  StackNavigationProp<MainStackParamList, 'AddTransaction' | 'EditTransaction'>,
-  BottomTabNavigationProp<MainTabsParamList>
->;
 
 type AddTransactionScreenRouteProp = RouteProp<MainStackParamList, 'AddTransaction' | 'EditTransaction'> | RouteProp<MainTabsParamList, 'AddTransaction'>;
 

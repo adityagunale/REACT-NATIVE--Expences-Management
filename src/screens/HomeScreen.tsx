@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,19 +10,23 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import { MainStackParamList } from '../navigation/AppNavigator';
+import { MainStackParamList, MainTabsParamList } from '../navigation/types';
 import { getTransactions } from '../redux/slices/transactionSlice';
 import { RootState, AppDispatch } from '../redux/store';
 import { Transaction, TransactionType } from '../redux/slices/transactionSlice';
+import { CompositeNavigationProp } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import { formatCurrency } from '../utils/formatters';
 
-type HomeScreenNavigationProp = StackNavigationProp<MainStackParamList>;
+type HomeScreenNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<MainTabsParamList, 'Home'>,
+  StackNavigationProp<MainStackParamList>
+>;
 
-interface HomeScreenProps {
-  navigation: HomeScreenNavigationProp;
-}
-
-const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
+const HomeScreen = () => {
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { 
@@ -33,16 +37,24 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
     balance 
   } = useSelector((state: RootState) => state.transaction as any);
 
+  const [refreshing, setRefreshing] = useState(false);
+
   useEffect(() => {
     loadTransactions();
   }, []);
 
-  const loadTransactions = () => {
-    dispatch(getTransactions());
+  const loadTransactions = async () => {
+    try {
+      await dispatch(getTransactions());
+    } catch (error) {
+      console.error('Error loading transactions:', error);
+    }
   };
 
-  const formatCurrency = (amount: number) => {
-    return `$${amount.toFixed(2)}`;
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadTransactions();
+    setRefreshing(false);
   };
 
   const formatDate = (dateString: string) => {
@@ -90,15 +102,77 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   }
 
   return (
-    <ScrollView 
+    <>
+    
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <View style={styles.headerLeft}>
+            <Text style={styles.headerTitle}>Dashboard</Text>
+            <Text style={styles.headerSubtitle}>Welcome, <Text style={styles.username}>{user?.name || 'User'} !</Text></Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.profileButton}
+            onPress={() => navigation.navigate('Profile')}
+          >
+            <Ionicons name="person-circle-outline" size={41} color="white" />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      <ScrollView 
       style={styles.container}
       refreshControl={
-        <RefreshControl refreshing={isLoading} onRefresh={loadTransactions} />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
-      <View style={styles.header}>
-        <Text style={styles.greeting}>Hello, {user?.name || 'User'}!</Text>
-        <Text style={styles.subGreeting}>Here's your financial summary</Text>
+
+      <View style={styles.toolsSection}>
+        <Text style={styles.sectionTitle}>Financial Tools</Text>
+        <View style={styles.toolsGrid}>
+          <TouchableOpacity
+            style={styles.toolCard}
+            onPress={() => navigation.navigate('DiscountCalculator')}
+          >
+            <View style={styles.toolIcon}>
+              <Ionicons name="calculator-outline" size={24} color="#6200ee" />
+            </View>
+            <Text style={styles.toolTitle}>Discount Calculator</Text>
+            <Text style={styles.toolDescription}>Calculate discounts and savings</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.toolCard}
+            onPress={() => navigation.navigate('LoanCalculator')}
+          >
+            <View style={styles.toolIcon}>
+              <Ionicons name="cash-outline" size={24} color="#6200ee" />
+            </View>
+            <Text style={styles.toolTitle}>Loan & EMI Calculator</Text>
+            <Text style={styles.toolDescription}>Calculate loan payments and EMIs</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.toolCard}
+            onPress={() => navigation.navigate('MonthlyExpenses')}
+          >
+            <View style={styles.toolIcon}>
+              <Ionicons name="calendar-outline" size={24} color="#6200ee" />
+            </View>
+            <Text style={styles.toolTitle}>Monthly Expenses</Text>
+            <Text style={styles.toolDescription}>Track and analyze monthly spending</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.toolCard}
+            onPress={() => navigation.navigate('EmailReport')}
+          >
+            <View style={styles.toolIcon}>
+              <Ionicons name="mail-outline" size={24} color="#6200ee" />
+            </View>
+            <Text style={styles.toolTitle}>Email Report</Text>
+            <Text style={styles.toolDescription}>Get detailed expense reports</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.balanceCard}>
@@ -182,13 +256,38 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           style={styles.actionButton}
           onPress={() => navigation.navigate('AddTransaction')}
         >
-          <View style={styles.actionButtonIcon}>
-            <Ionicons name="add-outline" size={24} color="#fff" />
-          </View>
-          <Text style={styles.actionButtonText}>Add Transaction</Text>
+          <Ionicons name="add-circle" size={24} color="#6200ee" />
+          <Text style={styles.actionText}>Add Transaction</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => navigation.navigate('Borrow')}
+        >
+          <Ionicons name="cash" size={24} color="#6200ee" />
+          <Text style={styles.actionText}>Borrow Money</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => navigation.navigate('Budget')}
+        >
+          <Ionicons name="wallet" size={24} color="#6200ee" />
+          <Text style={styles.actionText}>Budget</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={() => navigation.navigate('LoanCalculator')}
+        >
+          <Ionicons name="calculator" size={24} color="#6200ee" />
+          <Text style={styles.actionText}>Loan Calculator</Text>
         </TouchableOpacity>
       </View>
+
+     
     </ScrollView>
+    </>
   );
 };
 
@@ -203,18 +302,42 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   header: {
-    padding: 20,
-    paddingTop: 10,
+    backgroundColor: '#6200ee',
+    paddingTop: 60,
+    paddingBottom: 15,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+    borderBottomLeftRadius: 35,
+    borderBottomRightRadius: 35,
   },
-  greeting: {
-    fontSize: 24,
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom:10
+   
+  },
+  headerLeft: {
+    flex: 1,
+  },
+  headerTitle: {
+    fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
+    color: 'white',
+    marginBottom: 2,
   },
-  subGreeting: {
+  headerSubtitle: {
     fontSize: 16,
-    color: '#666',
-    marginTop: 5,
+    color: 'rgba(255, 255, 255, 0.8)',
+  },
+  username: {
+    fontSize: 17,
+    color: '#4CAF50',
+     fontWeight: 'bold',
+  },
+  profileButton: {
+    padding: 5,
   },
   balanceCard: {
     backgroundColor: '#6200ee',
@@ -361,23 +484,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: 10,
   },
-  actionButtonIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: '#6200ee',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 8,
+  actionText: {
+    fontSize: 12,
+    color: '#333',
+  },
+  toolsSection: {
+    padding: 20,
+    marginTop: 10,
+  },
+  toolsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginTop: 15,
+  },
+  toolCard: {
+    width: '48%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 15,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
   },
-  actionButtonText: {
-    fontSize: 12,
+  toolIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(98, 0, 238, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  toolTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
     color: '#333',
+    marginBottom: 5,
+  },
+  toolDescription: {
+    fontSize: 12,
+    color: '#666',
   },
 });
 

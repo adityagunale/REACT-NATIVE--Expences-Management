@@ -13,31 +13,22 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../../redux/store';
-import { login, clearError } from '../../redux/slices/authSlice';
+import { clearError } from '../../redux/slices/authSlice';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/types';
+import axios from 'axios';
+import { ENDPOINTS } from '../../config/api';
 
-type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
+type ForgotPasswordScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'ForgotPassword'>;
 
-interface LoginScreenProps {
-  navigation: LoginScreenNavigationProp;
+interface ForgotPasswordScreenProps {
+  navigation: ForgotPasswordScreenNavigationProp;
 }
 
-const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
+const ForgotPasswordScreen: React.FC<ForgotPasswordScreenProps> = ({ navigation }) => {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
-  const [passwordError, setPasswordError] = useState('');
-
-  const dispatch = useDispatch<AppDispatch>();
-  const { isLoading, error } = useSelector((state: RootState) => state.auth);
-
-  useEffect(() => {
-    if (error) {
-      Alert.alert('Error', error);
-      dispatch(clearError());
-    }
-  }, [error, dispatch]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateForm = () => {
     let isValid = true;
@@ -53,35 +44,43 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
       setEmailError('');
     }
 
-    // Password validation
-    if (!password) {
-      setPasswordError('Password is required');
-      isValid = false;
-    } else if (password.length < 6) {
-      setPasswordError('Password must be at least 6 characters');
-      isValid = false;
-    } else {
-      setPasswordError('');
-    }
-
     return isValid;
   };
 
-  const handleLogin = () => {
+  const handleForgotPassword = async () => {
     if (validateForm()) {
-      dispatch(login({ email, password }));
+      setIsLoading(true);
+      try {
+        const response = await axios.post(ENDPOINTS.AUTH.FORGOT_PASSWORD, { email });
+        if (response.data.success) {
+          Alert.alert(
+            'Success',
+            'Password reset instructions have been sent to your email',
+            [{ text: 'OK', onPress: () => navigation.navigate('Login') }]
+          );
+        }
+      } catch (error: any) {
+        Alert.alert(
+          'Error',
+          error.response?.data?.message || 'Failed to process request. Please try again.'
+        );
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.formContainer}>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Sign in to continue</Text>
+          <Text style={styles.title}>Forgot Password</Text>
+          <Text style={styles.subtitle}>
+            Enter your email address and we'll send you instructions to reset your password.
+          </Text>
 
           <View style={styles.inputContainer}>
             <Text style={styles.label}>Email</Text>
@@ -99,44 +98,22 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
             {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
           </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={(text) => {
-                setPassword(text);
-                setPasswordError('');
-              }}
-              secureTextEntry
-            />
-            {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
-          </View>
-
-          <TouchableOpacity
-            style={styles.forgotPassword}
-            onPress={() => navigation.navigate('ForgotPassword')}
-          >
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-          </TouchableOpacity>
-
           <TouchableOpacity
             style={styles.button}
-            onPress={handleLogin}
+            onPress={handleForgotPassword}
             disabled={isLoading}
           >
             {isLoading ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <Text style={styles.buttonText}>Sign In</Text>
+              <Text style={styles.buttonText}>Send Reset Instructions</Text>
             )}
           </TouchableOpacity>
 
-          <View style={styles.registerContainer}>
-            <Text style={styles.registerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-              <Text style={styles.registerLink}>Sign Up</Text>
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>Remember your password? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+              <Text style={styles.loginLink}>Sign In</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -152,26 +129,33 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     flexGrow: 1,
-    justifyContent: 'center',
+    padding: 16,
   },
   formContainer: {
-    padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 10,
+    marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
     color: '#666',
-    marginBottom: 30,
     textAlign: 'center',
+    marginBottom: 24,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 16,
   },
   label: {
     fontSize: 16,
@@ -179,7 +163,6 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
@@ -187,44 +170,36 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   errorText: {
-    color: 'red',
+    color: '#F44336',
     fontSize: 14,
-    marginTop: 5,
+    marginTop: 4,
   },
   button: {
     backgroundColor: '#6200ee',
     borderRadius: 8,
-    padding: 15,
+    padding: 16,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 16,
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  registerContainer: {
+  loginContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 16,
   },
-  registerText: {
+  loginText: {
     color: '#666',
     fontSize: 16,
   },
-  registerLink: {
+  loginLink: {
     color: '#6200ee',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  forgotPassword: {
-    alignSelf: 'flex-end',
-    marginBottom: 16,
-  },
-  forgotPasswordText: {
-    color: '#6200ee',
-    fontSize: 14,
-  },
 });
 
-export default LoginScreen; 
+export default ForgotPasswordScreen; 

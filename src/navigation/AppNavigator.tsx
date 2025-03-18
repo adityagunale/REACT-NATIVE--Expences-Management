@@ -8,10 +8,12 @@ import { RootState } from '../redux/store';
 import { CompositeScreenProps } from '@react-navigation/native';
 import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { StackScreenProps } from '@react-navigation/stack';
+import { useTheme } from '@react-navigation/native';
 
 // Auth Screens
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
+import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 
 // Main Screens
 import HomeScreen from '../screens/HomeScreen';
@@ -19,26 +21,25 @@ import TransactionsScreen from '../screens/TransactionsScreen';
 import AddTransactionScreen from '../screens/AddTransactionScreen';
 import TransactionDetailScreen from '../screens/TransactionDetailScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import EditProfileScreen from '../screens/EditProfileScreen';
+import ChangePasswordScreen from '../screens/ChangePasswordScreen';
+import BudgetScreen from '../screens/BudgetScreen';
+import BorrowScreen from '../screens/BorrowScreen';
 
-// Stack Navigator Types
-export type AuthStackParamList = {
-  Login: undefined;
-  Register: undefined;
-};
+// Calculator Screens
+import DiscountCalculator from '../screens/calculators/DiscountCalculator';
+import LoanCalculator from '../screens/calculators/LoanCalculator';
+import MonthlyExpenses from '../screens/calculators/MonthlyExpenses';
+import EmailReport from '../screens/calculators/EmailReport';
 
-export type MainStackParamList = {
-  MainTabs: undefined;
-  TransactionDetail: { id: string };
-  AddTransaction: undefined;
-  EditTransaction: { id: string };
-};
-
-export type MainTabsParamList = {
-  Home: undefined;
-  Transactions: undefined;
-  AddTransaction: undefined;
-  Profile: undefined;
-};
+// Navigation Types
+import { 
+  AuthStackParamList, 
+  MainStackParamList, 
+  MainTabsParamList,
+  AddTransactionScreenNavigationProp,
+  TransactionDetailScreenNavigationProp
+} from './types';
 
 // Create navigators
 const AuthStack = createStackNavigator<AuthStackParamList>();
@@ -61,6 +62,7 @@ const AuthNavigator = () => {
     >
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Register" component={RegisterScreen} />
+      <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
     </AuthStack.Navigator>
   );
 };
@@ -86,6 +88,8 @@ const MainTabsNavigator = () => {
             iconName = focused ? 'add-circle' : 'add-circle-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'person' : 'person-outline';
+          } else if (route.name === 'Budget') {
+            iconName = focused ? 'wallet' : 'wallet-outline';
           } else {
             iconName = 'help-circle-outline';
           }
@@ -103,7 +107,14 @@ const MainTabsNavigator = () => {
         },
       })}
     >
-      <MainTabs.Screen name="Home" component={HomeScreen} />
+      <MainTabs.Screen 
+        name="Home" 
+        component={HomeScreen}
+        options={{
+          headerShown: false,
+          tabBarLabel: 'Home'
+        }}
+      />
       <MainTabs.Screen name="Transactions" component={TransactionsScreen} />
       <MainTabs.Screen 
         name="AddTransaction" 
@@ -113,6 +124,7 @@ const MainTabsNavigator = () => {
         }}
       />
       <MainTabs.Screen name="Profile" component={ProfileScreen} />
+      <MainTabs.Screen name="Budget" component={BudgetScreen} />
     </MainTabs.Navigator>
   );
 };
@@ -150,6 +162,46 @@ const MainNavigator = () => {
         name="EditTransaction" 
         component={AddTransactionScreen} 
         options={{ title: 'Edit Transaction' }}
+      />
+      <MainStack.Screen 
+        name="EditProfile" 
+        component={EditProfileScreen} 
+        options={{ title: 'Edit Profile' }}
+      />
+      <MainStack.Screen 
+        name="ChangePassword" 
+        component={ChangePasswordScreen} 
+        options={{ title: 'Change Password' }}
+      />
+      <MainStack.Screen 
+        name="DiscountCalculator" 
+        component={DiscountCalculator} 
+        options={{ title: 'Discount Calculator' }}
+      />
+      <MainStack.Screen 
+        name="LoanCalculator" 
+        component={LoanCalculator} 
+        options={{ title: 'Loan & EMI Calculator' }}
+      />
+      <MainStack.Screen 
+        name="MonthlyExpenses" 
+        component={MonthlyExpenses} 
+        options={{ title: 'Monthly Expenses' }}
+      />
+      <MainStack.Screen 
+        name="EmailReport" 
+        component={EmailReport} 
+        options={{ title: 'Email Report' }}
+      />
+      <MainStack.Screen 
+        name="Borrow" 
+        component={BorrowScreen}
+        options={{ title: 'Borrow Money' }}
+      />
+      <MainStack.Screen 
+        name="Budget" 
+        component={BudgetScreen}
+        options={{ title: 'Budget' }}
       />
     </MainStack.Navigator>
   );

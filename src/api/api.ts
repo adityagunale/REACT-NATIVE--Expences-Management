@@ -1,28 +1,10 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Constants from 'expo-constants';
-import { Platform } from 'react-native';
-
-// Get the local IP address for development
-const getBaseUrl = () => {
-  // For Android emulator, use 10.0.2.2 to access localhost
-  // For iOS simulator, use localhost
-  // For physical devices, use your computer's local IP address
-  let baseUrl = 'http://localhost:5000';
-  
-  if (Constants.expoConfig?.extra?.isProduction) {
-    // Use production URL when deployed
-    baseUrl = 'https://your-production-api.com';
-  } else if (Platform.OS === 'android') {
-    baseUrl = 'http://10.0.2.2:5000';
-  }
-  
-  return baseUrl;
-};
+import { API_URL } from '../config/api';
 
 // Create an axios instance
 export const api = axios.create({
-  baseURL: getBaseUrl(),
+  baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },

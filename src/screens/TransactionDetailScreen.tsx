@@ -9,10 +9,9 @@ import {
   Alert,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
-import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
-import { MainStackParamList } from '../navigation/AppNavigator';
+import { MainStackParamList, TransactionDetailScreenNavigationProp } from '../navigation/types';
 import {
   getTransaction,
   deleteTransaction,
@@ -20,11 +19,6 @@ import {
   TransactionType,
 } from '../redux/slices/transactionSlice';
 import { RootState, AppDispatch } from '../redux/store';
-
-type TransactionDetailScreenNavigationProp = StackNavigationProp<
-  MainStackParamList,
-  'TransactionDetail'
->;
 
 type TransactionDetailScreenRouteProp = RouteProp<
   MainStackParamList,
@@ -55,7 +49,7 @@ const TransactionDetailScreen: React.FC<TransactionDetailScreenProps> = ({
   }, [dispatch, id]);
 
   const formatCurrency = (amount: number) => {
-    return `$${amount.toFixed(2)}`;
+    return ` ₹ ${amount.toFixed(2)}`;
   };
 
   const formatDate = (dateString: string) => {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -9,14 +9,30 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
-import { logout } from '../redux/slices/authSlice';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { MainStackParamList } from '../navigation/AppNavigator';
+import { logout, loadUser } from '../redux/slices/authSlice';
 import { RootState, AppDispatch } from '../redux/store';
+import { useFocusEffect } from '@react-navigation/native';
 
-const ProfileScreen: React.FC = () => {
+type ProfileScreenNavigationProp = StackNavigationProp<MainStackParamList>;
+
+interface ProfileScreenProps {
+  navigation: ProfileScreenNavigationProp;
+}
+
+const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
   const { totalIncome, totalExpense, balance } = useSelector(
     (state: RootState) => state.transaction as any
+  );
+
+  // Reload user data when screen is focused
+  useFocusEffect(
+    React.useCallback(() => {
+      dispatch(loadUser());
+    }, [dispatch])
   );
 
   const handleLogout = () => {
@@ -40,7 +56,7 @@ const ProfileScreen: React.FC = () => {
   };
 
   const formatCurrency = (amount: number) => {
-    return `$${amount.toFixed(2)}`;
+    return `₹ ${amount.toFixed(2)}`;
   };
 
   return (
@@ -52,7 +68,7 @@ const ProfileScreen: React.FC = () => {
           </Text>
         </View>
         <Text style={styles.userName}>{user?.name || 'User'}</Text>
-        <Text style={styles.userEmail}>{user?.email || 'user@example.com'}</Text>
+        {/* <Text style={styles.userEmail}>{user?.email || 'user@example.com'}</Text> */}
       </View>
 
       <View style={styles.statsContainer}>
@@ -86,7 +102,10 @@ const ProfileScreen: React.FC = () => {
       </View>
 
       <View style={styles.menuContainer}>
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('EditProfile')}
+        >
           <View style={styles.menuIconContainer}>
             <Ionicons name="person-outline" size={22} color="#6200ee" />
           </View>
@@ -94,7 +113,10 @@ const ProfileScreen: React.FC = () => {
           <Ionicons name="chevron-forward" size={20} color="#ccc" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('ChangePassword')}
+        >
           <View style={styles.menuIconContainer}>
             <Ionicons name="lock-closed-outline" size={22} color="#6200ee" />
           </View>
