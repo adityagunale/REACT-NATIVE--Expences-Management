@@ -11,6 +11,7 @@ import { StackScreenProps } from '@react-navigation/stack';
 import { useTheme } from '@react-navigation/native';
 
 // Auth Screens
+import FlashScreen from '../screens/FlashScreen';
 import LoginScreen from '../screens/auth/LoginScreen';
 import RegisterScreen from '../screens/auth/RegisterScreen';
 import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
@@ -23,8 +24,9 @@ import TransactionDetailScreen from '../screens/TransactionDetailScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import EditProfileScreen from '../screens/EditProfileScreen';
 import ChangePasswordScreen from '../screens/ChangePasswordScreen';
-import BudgetScreen from '../screens/BudgetScreen';
 import BorrowScreen from '../screens/BorrowScreen';
+import EMIScreen from '../screens/EMIScreen';
+import EMIDetailsScreen from '../screens/EMIDetailsScreen';
 
 // Calculator Screens
 import DiscountCalculator from '../screens/calculators/DiscountCalculator';
@@ -50,6 +52,7 @@ const MainTabs = createBottomTabNavigator<MainTabsParamList>();
 const AuthNavigator = () => {
   return (
     <AuthStack.Navigator
+      initialRouteName="FlashScreen"
       screenOptions={{
         headerStyle: {
           backgroundColor: '#6200ee',
@@ -60,17 +63,29 @@ const AuthNavigator = () => {
         },
       }}
     >
-      <AuthStack.Screen name="Login" component={LoginScreen} />
-      <AuthStack.Screen name="Register" component={RegisterScreen} />
-      <AuthStack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+      <AuthStack.Screen 
+        name="FlashScreen" 
+        component={FlashScreen} 
+        options={{ headerShown: false }}
+      />
+      <AuthStack.Screen 
+        name="Login" 
+        component={LoginScreen} 
+        options={{ headerShown: false }}
+      />
+      <AuthStack.Screen 
+        name="Register" 
+        component={RegisterScreen} 
+        options={{ headerShown: false }}
+      />
+      <AuthStack.Screen 
+        name="ForgotPassword" 
+        component={ForgotPasswordScreen} 
+        options={{ headerShown: false }}
+      />
     </AuthStack.Navigator>
   );
 };
-
-// Update the AddTransactionScreen import to handle the navigation prop type
-const AddTransactionTabScreen = (props: BottomTabScreenProps<MainTabsParamList, 'AddTransaction'>) => (
-  <AddTransactionScreen {...props} />
-);
 
 // Main Tabs Navigator
 const MainTabsNavigator = () => {
@@ -78,53 +93,60 @@ const MainTabsNavigator = () => {
     <MainTabs.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: string;
+          let iconName;
 
-          if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'Transactions') {
-            iconName = focused ? 'list' : 'list-outline';
-          } else if (route.name === 'AddTransaction') {
-            iconName = focused ? 'add-circle' : 'add-circle-outline';
-          } else if (route.name === 'Profile') {
-            iconName = focused ? 'person' : 'person-outline';
-          } else if (route.name === 'Budget') {
-            iconName = focused ? 'wallet' : 'wallet-outline';
-          } else {
-            iconName = 'help-circle-outline';
+          switch (route.name) {
+            case 'Home':
+              iconName = focused ? 'home' : 'home-outline';
+              break;
+            case 'Transactions':
+              iconName = focused ? 'list' : 'list-outline';
+              break;
+            case 'AddTransaction':
+              iconName = focused ? 'add-circle' : 'add-circle-outline';
+              break;
+            case 'Profile':
+              iconName = focused ? 'person' : 'person-outline';
+              break;
+            default:
+              iconName = 'ellipsis-horizontal';
           }
 
           return <Ionicons name={iconName as any} size={size} color={color} />;
         },
         tabBarActiveTintColor: '#6200ee',
         tabBarInactiveTintColor: 'gray',
-        headerStyle: {
-          backgroundColor: '#6200ee',
-        },
-        headerTintColor: '#fff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
+        tabBarStyle: {
+          paddingBottom: 5,
+          height: 60,
         },
       })}
     >
       <MainTabs.Screen 
         name="Home" 
-        component={HomeScreen}
-        options={{
-          headerShown: false,
-          tabBarLabel: 'Home'
-        }}
+        component={HomeScreen} 
+        options={{ headerShown: false }}
       />
-      <MainTabs.Screen name="Transactions" component={TransactionsScreen} />
+      <MainTabs.Screen 
+        name="Transactions" 
+        component={TransactionsScreen} 
+        options={{ headerShown: false }}
+      />
       <MainTabs.Screen 
         name="AddTransaction" 
-        component={AddTransactionTabScreen}
-        options={{
-          tabBarLabel: 'Add',
-        }}
+        component={AddTransactionScreen} 
+        options={{ headerShown: false }}
       />
-      <MainTabs.Screen name="Profile" component={ProfileScreen} />
-      <MainTabs.Screen name="Budget" component={BudgetScreen} />
+      <MainTabs.Screen 
+        name="Profile" 
+        component={ProfileScreen} 
+        options={{ headerShown: false }}
+      />
+      {/* <MainTabs.Screen 
+        name="EMI" 
+        component={EMIScreen}
+        options={{ headerShown: false }}
+      /> */}
     </MainTabs.Navigator>
   );
 };
@@ -199,9 +221,20 @@ const MainNavigator = () => {
         options={{ title: 'Borrow Money' }}
       />
       <MainStack.Screen 
-        name="Budget" 
-        component={BudgetScreen}
-        options={{ title: 'Budget' }}
+        name="EMI" 
+        component={EMIScreen}
+        options={{ title: 'EMI Management' }}
+      />
+      <MainStack.Screen 
+        name="EMIDetails" 
+        component={EMIDetailsScreen}
+        options={{
+          title: 'EMI Details',
+          headerStyle: {
+            backgroundColor: '#6200ee',
+          },
+          headerTintColor: '#fff',
+        }}
       />
     </MainStack.Navigator>
   );

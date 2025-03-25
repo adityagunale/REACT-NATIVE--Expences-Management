@@ -2,8 +2,10 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { CompositeNavigationProp } from '@react-navigation/native';
 import { NavigatorScreenParams } from '@react-navigation/native';
+import { EMI } from '../redux/slices/emiSlice';
 
 export type AuthStackParamList = {
+  FlashScreen: undefined;
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
@@ -21,7 +23,8 @@ export type MainStackParamList = {
   MonthlyExpenses: undefined;
   EmailReport: undefined;
   Borrow: undefined;
-  Budget: undefined;
+  EMI: undefined;
+  EMIDetails: { emi: EMI };
 };
 
 export type MainTabsParamList = {
@@ -29,7 +32,7 @@ export type MainTabsParamList = {
   Transactions: undefined;
   AddTransaction: undefined;
   Profile: undefined;
-  Budget: undefined;
+  EMI: undefined;
 };
 
 export type AddTransactionScreenNavigationProp = CompositeNavigationProp<

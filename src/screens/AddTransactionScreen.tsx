@@ -29,6 +29,7 @@ import {
   TransactionType
 } from '../redux/slices/transactionSlice';
 import { RootState, AppDispatch } from '../redux/store';
+import Header from '../components/Header';
 
 type AddTransactionScreenRouteProp = RouteProp<MainStackParamList, 'AddTransaction' | 'EditTransaction'> | RouteProp<MainTabsParamList, 'AddTransaction'>;
 
@@ -154,166 +155,165 @@ const AddTransactionScreen: React.FC<AddTransactionScreenProps> = ({
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View style={styles.formContainer}>
-          <Text style={styles.title}>
-            {isEditing ? 'Edit Transaction' : 'Add Transaction'}
-          </Text>
-
-          <View style={styles.typeSelector}>
-            <TouchableOpacity
-              style={[
-                styles.typeButton,
-                type === TransactionType.EXPENSE && styles.activeTypeButton,
-              ]}
-              onPress={() => setType(TransactionType.EXPENSE)}
-            >
-              <Ionicons
-                name="arrow-up-outline"
-                size={20}
-                color={type === TransactionType.EXPENSE ? '#fff' : '#F44336'}
-              />
-              <Text
+    <ScrollView style={styles.container}>
+      <Header title={isEditing ? "Edit Transaction" : "Add Transaction"} showBack={true} showProfile={false} />
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <View style={styles.formContainer}>
+            <View style={styles.typeSelector}>
+              <TouchableOpacity
                 style={[
-                  styles.typeButtonText,
-                  type === TransactionType.EXPENSE && styles.activeTypeButtonText,
+                  styles.typeButton,
+                  type === TransactionType.EXPENSE && styles.activeTypeButton,
                 ]}
+                onPress={() => setType(TransactionType.EXPENSE)}
               >
-                Expense
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.typeButton,
-                type === TransactionType.INCOME && styles.activeIncomeButton,
-              ]}
-              onPress={() => setType(TransactionType.INCOME)}
-            >
-              <Ionicons
-                name="arrow-down-outline"
-                size={20}
-                color={type === TransactionType.INCOME ? '#fff' : '#4CAF50'}
-              />
-              <Text
-                style={[
-                  styles.typeButtonText,
-                  type === TransactionType.INCOME && styles.activeTypeButtonText,
-                ]}
-              >
-                Income
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Title *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter title"
-              value={title}
-              onChangeText={setTitle}
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Amount *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter amount"
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="numeric"
-            />
-          </View>
-
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Category *</Text>
-            <TouchableOpacity
-              style={styles.input}
-              onPress={() => setShowCategories(!showCategories)}
-            >
-              <Text style={category ? styles.inputText : styles.placeholderText}>
-                {category || 'Select category'}
-              </Text>
-              <Ionicons name="chevron-down-outline" size={20} color="#666" />
-            </TouchableOpacity>
-            {showCategories && (
-              <View style={styles.categoriesContainer}>
-                <ScrollView 
-                  style={styles.categoriesList}
-                  showsVerticalScrollIndicator={true}
-                  nestedScrollEnabled={true}
-                  contentContainerStyle={styles.categoriesScrollContent}
+                <Ionicons
+                  name="arrow-up-outline"
+                  size={20}
+                  color={type === TransactionType.EXPENSE ? '#fff' : '#F44336'}
+                />
+                <Text
+                  style={[
+                    styles.typeButtonText,
+                    type === TransactionType.EXPENSE && styles.activeTypeButtonText,
+                  ]}
                 >
-                  {CATEGORIES.map((cat) => (
-                    <TouchableOpacity
-                      key={cat}
-                      style={styles.categoryItem}
-                      onPress={() => {
-                        setCategory(cat);
-                        setShowCategories(false);
-                      }}
-                    >
-                      <Text style={styles.categoryText}>{cat}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </View>
-            )}
-          </View>
+                  Expense
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.typeButton,
+                  type === TransactionType.INCOME && styles.activeIncomeButton,
+                ]}
+                onPress={() => setType(TransactionType.INCOME)}
+              >
+                <Ionicons
+                  name="arrow-down-outline"
+                  size={20}
+                  color={type === TransactionType.INCOME ? '#fff' : '#4CAF50'}
+                />
+                <Text
+                  style={[
+                    styles.typeButtonText,
+                    type === TransactionType.INCOME && styles.activeTypeButtonText,
+                  ]}
+                >
+                  Income
+                </Text>
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Date</Text>
-            <TouchableOpacity
-              style={styles.input}
-              onPress={() => setShowDatePicker(true)}
-            >
-              <Text style={styles.inputText}>{formatDate(date)}</Text>
-              <Ionicons name="calendar-outline" size={20} color="#666" />
-            </TouchableOpacity>
-            {showDatePicker && (
-              <DateTimePicker
-                value={date}
-                mode="date"
-                display="default"
-                onChange={handleDateChange}
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Title *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter title"
+                value={title}
+                onChangeText={setTitle}
               />
-            )}
-          </View>
+            </View>
 
-          <View style={styles.inputContainer}>
-            <Text style={styles.label}>Description (Optional)</Text>
-            <TextInput
-              style={[styles.input, styles.textArea]}
-              placeholder="Enter description"
-              value={description}
-              onChangeText={setDescription}
-              multiline
-              numberOfLines={4}
-              textAlignVertical="top"
-            />
-          </View>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Amount *</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter amount"
+                value={amount}
+                onChangeText={setAmount}
+                keyboardType="numeric"
+              />
+            </View>
 
-          <TouchableOpacity
-            style={styles.button}
-            onPress={handleSubmit}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>
-                {isEditing ? 'Update Transaction' : 'Add Transaction'}
-              </Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Category *</Text>
+              <TouchableOpacity
+                style={styles.input}
+                onPress={() => setShowCategories(!showCategories)}
+              >
+                <Text style={category ? styles.inputText : styles.placeholderText}>
+                  {category || 'Select category'}
+                </Text>
+                <Ionicons name="chevron-down-outline" size={20} color="#666" />
+              </TouchableOpacity>
+              {showCategories && (
+                <View style={styles.categoriesContainer}>
+                  <ScrollView 
+                    style={styles.categoriesList}
+                    showsVerticalScrollIndicator={true}
+                    nestedScrollEnabled={true}
+                    contentContainerStyle={styles.categoriesScrollContent}
+                  >
+                    {CATEGORIES.map((cat) => (
+                      <TouchableOpacity
+                        key={cat}
+                        style={styles.categoryItem}
+                        onPress={() => {
+                          setCategory(cat);
+                          setShowCategories(false);
+                        }}
+                      >
+                        <Text style={styles.categoryText}>{cat}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Date</Text>
+              <TouchableOpacity
+                style={styles.input}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Text style={styles.inputText}>{formatDate(date)}</Text>
+                <Ionicons name="calendar-outline" size={20} color="#666" />
+              </TouchableOpacity>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={date}
+                  mode="date"
+                  display="default"
+                  onChange={handleDateChange}
+                />
+              )}
+            </View>
+
+            <View style={styles.inputContainer}>
+              <Text style={styles.label}>Description (Optional)</Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                placeholder="Enter description"
+                value={description}
+                onChangeText={setDescription}
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+              />
+            </View>
+
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleSubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>
+                  {isEditing ? 'Update Transaction' : 'Add Transaction'}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </ScrollView>
   );
 };
 

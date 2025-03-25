@@ -17,20 +17,83 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState, AppDispatch } from '../redux/store';
 import { addBorrow, updateBorrow, deleteBorrow, Borrow } from '../redux/slices/borrowSlice';
 import { formatCurrency } from '../utils/formatters';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import * as Notifications from 'expo-notifications';
 
 const BorrowScreen = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [name, setName] = useState('');
   const [amount, setAmount] = useState('');
   const [reason, setReason] = useState('');
-  const [dueDate, setDueDate] = useState('');
+  const [dateGiven, setDateGiven] = useState(new Date());
+  const [dueDate, setDueDate] = useState(new Date());
+  const [showDateGivenPicker, setShowDateGivenPicker] = useState(false);
+  const [showDueDatePicker, setShowDueDatePicker] = useState(false);
   const [editingBorrow, setEditingBorrow] = useState<Borrow | null>(null);
+  const [expandedItemId, setExpandedItemId] = useState<string | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
   const borrows = useSelector((state: RootState) => state.borrow.borrows);
 
-  const handleSubmit = () => {
-    if (!name.trim() || !amount.trim() || !reason.trim() || !dueDate.trim()) {
+  // Setup notification handler
+  React.useEffect(() => {
+    const configurePushNotifications = async () => {
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Needed', 'Please enable notifications to receive due date reminders.');
+      }
+    };
+
+    configurePushNotifications();
+  }, []);
+
+  const scheduleNotification = async (borrowName: string, dueDate: Date) => {
+    try {
+      // Schedule notification 1 day before due date
+      const trigger = new Date(dueDate);
+      trigger.setDate(trigger.getDate() - 1);
+      trigger.setHours(9, 0, 0); // Set to 9 AM
+
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: 'Borrow Due Tomorrow',
+          body: `Your borrow "${borrowName}" is due tomorrow!`,
+          sound: true,
+        },
+        trigger: {
+          type: 'date',
+          date: trigger,
+        },
+      });
+    } catch (error) {
+      console.log('Error scheduling notification:', error);
+    }
+  };
+
+  const handleDateGivenChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDateGivenPicker(false);
+    }
+    if (selectedDate) {
+      setDateGiven(selectedDate);
+      // If given date is after due date, update due date
+      if (selectedDate > dueDate) {
+        setDueDate(selectedDate);
+      }
+    }
+  };
+
+  const handleDueDateChange = (event: any, selectedDate?: Date) => {
+    if (Platform.OS === 'android') {
+      setShowDueDatePicker(false);
+    }
+    if (selectedDate) {
+      setDueDate(selectedDate);
+    }
+  };
+
+  const handleSubmit = async () => {
+    if (!name.trim() || !amount.trim() || !reason.trim()) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
@@ -40,12 +103,13 @@ const BorrowScreen = () => {
       name: name.trim(),
       amount: parseFloat(amount),
       reason: reason.trim(),
-      date: new Date().toISOString(),
-      dueDate: dueDate.trim(),
+      date: dateGiven.toISOString(),
+      dueDate: dueDate.toISOString(),
       status: 'pending',
     };
 
     dispatch(addBorrow(newBorrow));
+    await scheduleNotification(name.trim(), dueDate);
     resetFormFields();
     setIsModalVisible(false);
   };
@@ -53,7 +117,7 @@ const BorrowScreen = () => {
   const handleUpdateBorrow = () => {
     if (!editingBorrow) return;
 
-    if (!name.trim() || !amount.trim() || !reason.trim() || !dueDate.trim()) {
+    if (!name.trim() || !amount.trim() || !reason.trim()) {
       Alert.alert('Error', 'Please fill in all fields');
       return;
     }
@@ -63,7 +127,6 @@ const BorrowScreen = () => {
       name: name.trim(),
       amount: parseFloat(amount),
       reason: reason.trim(),
-      dueDate: dueDate.trim(),
     };
 
     dispatch(updateBorrow(updatedBorrow));
@@ -87,7 +150,8 @@ const BorrowScreen = () => {
     setName(borrow.name);
     setAmount(borrow.amount.toString());
     setReason(borrow.reason);
-    setDueDate(borrow.dueDate);
+    setDateGiven(new Date(borrow.date));
+    setDueDate(new Date(borrow.dueDate));
     setIsModalVisible(true);
   };
 
@@ -95,12 +159,16 @@ const BorrowScreen = () => {
     setName('');
     setAmount('');
     setReason('');
-    setDueDate('');
+    setDateGiven(new Date());
+    setDueDate(new Date());
     setEditingBorrow(null);
   };
 
   const renderBorrowItem = ({ item }: { item: Borrow }) => (
-    <View style={styles.borrowItem}>
+    <TouchableOpacity 
+      style={styles.borrowItem}
+      onPress={() => setExpandedItemId(expandedItemId === item.id ? null : item.id)}
+    >
       <View style={styles.borrowItemHeader}>
         <Text style={styles.borrowName}>{item.name}</Text>
         <Text style={[
@@ -111,23 +179,50 @@ const BorrowScreen = () => {
         </Text>
       </View>
       <Text style={styles.borrowAmount}>{formatCurrency(item.amount)}</Text>
-      <Text style={styles.borrowReason}>{item.reason}</Text>
-      <Text style={styles.borrowDate}>Due: {new Date(item.dueDate).toLocaleDateString()}</Text>
-      <View style={styles.borrowActions}>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.editButton]}
-          onPress={() => handleEditBorrow(item)}
-        >
-          <Ionicons name="pencil" size={20} color="#6200ee" />
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.actionButton, styles.deleteButton]}
-          onPress={() => handleDeleteBorrow(item.id)}
-        >
-          <Ionicons name="trash" size={20} color="#F44336" />
-        </TouchableOpacity>
-      </View>
-    </View>
+      
+      {expandedItemId === item.id && (
+        <View style={styles.expandedContent}>
+          <View style={styles.detailRow}>
+            <Ionicons name="document-text" size={20} color="#666" />
+            <Text style={styles.detailLabel}>Reason:</Text>
+            <Text style={styles.detailText}>{item.reason}</Text>
+          </View>
+          
+          <View style={styles.detailRow}>
+            <Ionicons name="calendar" size={20} color="#666" />
+            <Text style={styles.detailLabel}>Given:</Text>
+            <Text style={styles.detailText}>
+              {new Date(item.date).toLocaleDateString()}
+            </Text>
+          </View>
+          
+          <View style={styles.detailRow}>
+            <Ionicons name="calendar" size={20} color="#666" />
+            <Text style={styles.detailLabel}>Due:</Text>
+            <Text style={styles.detailText}>
+              {new Date(item.dueDate).toLocaleDateString()}
+            </Text>
+          </View>
+
+          <View style={styles.borrowActions}>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.editButton]}
+              onPress={() => handleEditBorrow(item)}
+            >
+              <Ionicons name="pencil" size={20} color="#6200ee" />
+              <Text style={styles.actionButtonText}>Edit</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.actionButton, styles.deleteButton]}
+              onPress={() => handleDeleteBorrow(item.id)}
+            >
+              <Ionicons name="trash" size={20} color="#F44336" />
+              <Text style={styles.actionButtonText}>Delete</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+    </TouchableOpacity>
   );
 
   return (
@@ -137,6 +232,11 @@ const BorrowScreen = () => {
         renderItem={renderBorrowItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
+        ListEmptyComponent={() => (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No borrows yet. Click + to add one.</Text>
+          </View>
+        )}
       />
 
       <TouchableOpacity
@@ -193,7 +293,7 @@ const BorrowScreen = () => {
                 <View style={styles.amountInput}>
                   <Text style={styles.currencySymbol}>₹</Text>
                   <TextInput
-                    style={styles.input}
+                    style={[styles.input, { flex: 1 }]}
                     placeholder="Enter amount"
                     keyboardType="numeric"
                     value={amount}
@@ -215,13 +315,29 @@ const BorrowScreen = () => {
               </View>
 
               <View style={styles.inputGroup}>
+                <Text style={styles.label}>Date Given</Text>
+                <TouchableOpacity
+                  style={styles.dateButton}
+                  onPress={() => setShowDateGivenPicker(true)}
+                >
+                  <Text style={styles.dateButtonText}>
+                    {dateGiven.toLocaleDateString()}
+                  </Text>
+                  <Ionicons name="calendar" size={20} color="#6200ee" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.inputGroup}>
                 <Text style={styles.label}>Due Date</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="YYYY-MM-DD"
-                  value={dueDate}
-                  onChangeText={setDueDate}
-                />
+                <TouchableOpacity
+                  style={styles.dateButton}
+                  onPress={() => setShowDueDatePicker(true)}
+                >
+                  <Text style={styles.dateButtonText}>
+                    {dueDate.toLocaleDateString()}
+                  </Text>
+                  <Ionicons name="calendar" size={20} color="#6200ee" />
+                </TouchableOpacity>
               </View>
 
               <TouchableOpacity
@@ -233,6 +349,16 @@ const BorrowScreen = () => {
                 </Text>
               </TouchableOpacity>
             </ScrollView>
+
+            {(showDateGivenPicker || showDueDatePicker) && (
+              <DateTimePicker
+                value={showDateGivenPicker ? dateGiven : dueDate}
+                mode="date"
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={showDateGivenPicker ? handleDateGivenChange : handleDueDateChange}
+                minimumDate={showDueDatePicker ? dateGiven : undefined}
+              />
+            )}
           </View>
         </KeyboardAvoidingView>
       </Modal>
@@ -303,12 +429,23 @@ const styles = StyleSheet.create({
   borrowActions: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    marginTop: 12,
+    marginTop: 16,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
   },
   actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     padding: 8,
-    marginLeft: 8,
+    marginLeft: 12,
     borderRadius: 8,
+    paddingHorizontal: 16,
+  },
+  actionButtonText: {
+    marginLeft: 4,
+    fontSize: 14,
+    fontWeight: '600',
   },
   editButton: {
     backgroundColor: '#F3E5F5',
@@ -340,12 +477,14 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 20,
     padding: 20,
     maxHeight: '80%',
+    width: '100%',
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 20,
+    paddingHorizontal: 10,
   },
   modalTitle: {
     fontSize: 20,
@@ -353,7 +492,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   formContainer: {
-    flex: 1,
+    paddingHorizontal: 10,
   },
   inputGroup: {
     marginBottom: 20,
@@ -390,11 +529,59 @@ const styles = StyleSheet.create({
     padding: 16,
     alignItems: 'center',
     marginTop: 20,
+    marginBottom: 20,
   },
   submitButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: '#999',
+    fontSize: 16,
+  },
+  dateButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 12,
+    backgroundColor: '#fff',
+  },
+  dateButtonText: {
+    fontSize: 16,
+    color: '#333',
+  },
+  expandedContent: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
+  detailRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+    paddingHorizontal: 4,
+  },
+  detailLabel: {
+    fontSize: 14,
+    color: '#666',
+    marginLeft: 8,
+    marginRight: 8,
+    fontWeight: '600',
+  },
+  detailText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#333',
   },
 });
 

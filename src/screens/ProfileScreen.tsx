@@ -10,10 +10,11 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { Ionicons } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { MainStackParamList } from '../navigation/AppNavigator';
+import { MainStackParamList } from '../navigation/types';
 import { logout, loadUser } from '../redux/slices/authSlice';
 import { RootState, AppDispatch } from '../redux/store';
 import { useFocusEffect } from '@react-navigation/native';
+import Header from '../components/Header';
 
 type ProfileScreenNavigationProp = StackNavigationProp<MainStackParamList>;
 
@@ -60,17 +61,10 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.header}>
-        <View style={styles.avatarContainer}>
-          <Text style={styles.avatarText}>
-            {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
-          </Text>
-        </View>
-        <Text style={styles.userName}>{user?.name || 'User'}</Text>
-        {/* <Text style={styles.userEmail}>{user?.email || 'user@example.com'}</Text> */}
-      </View>
-
+    <>
+    
+      <Header title="Profile" showBack={false} />
+      <ScrollView style={styles.container}>
       <View style={styles.statsContainer}>
         <View style={styles.statCard}>
           <Text style={styles.statLabel}>Balance</Text>
@@ -156,6 +150,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ navigation }) => {
 
       <Text style={styles.versionText}>Version 1.0.0</Text>
     </ScrollView>
+    </>
   );
 };
 
@@ -164,39 +159,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
-  header: {
-    backgroundColor: '#6200ee',
-    padding: 20,
-    alignItems: 'center',
-    paddingBottom: 30,
-  },
-  avatarContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: '#fff',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 15,
-  },
-  avatarText: {
-    fontSize: 36,
-    fontWeight: 'bold',
-    color: '#6200ee',
-  },
-  userName: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 5,
-  },
-  userEmail: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
   statsContainer: {
     padding: 16,
-    marginTop: -20,
   },
   statCard: {
     backgroundColor: '#fff',

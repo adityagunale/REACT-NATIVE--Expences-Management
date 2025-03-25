@@ -16,6 +16,7 @@ import { RootState, AppDispatch } from '../../redux/store';
 import { login, clearError } from '../../redux/slices/authSlice';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { AuthStackParamList } from '../../navigation/types';
+import { MaterialIcons } from '@expo/vector-icons';
 
 type LoginScreenNavigationProp = StackNavigationProp<AuthStackParamList, 'Login'>;
 
@@ -28,6 +29,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
   const [passwordError, setPasswordError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
   const { isLoading, error } = useSelector((state: RootState) => state.auth);
@@ -80,37 +82,60 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
     >
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.formContainer}>
+          <View style={styles.iconContainer}>
+            <MaterialIcons name="account-balance-wallet" size={80} color="#6200ee" />
+          </View>
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to continue</Text>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Email</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your email"
-              value={email}
-              onChangeText={(text) => {
-                setEmail(text);
-                setEmailError('');
-              }}
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+            <View style={styles.labelContainer}>
+              <MaterialIcons name="email" size={20} color="#6200ee" style={styles.labelIcon} />
+              <Text style={styles.label}>Email</Text>
+            </View>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your email"
+                value={email}
+                onChangeText={(text) => {
+                  setEmail(text);
+                  setEmailError('');
+                }}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
             {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
           </View>
 
           <View style={styles.inputContainer}>
-            <Text style={styles.label}>Password</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Enter your password"
-              value={password}
-              onChangeText={(text) => {
-                setPassword(text);
-                setPasswordError('');
-              }}
-              secureTextEntry
-            />
+            <View style={styles.labelContainer}>
+              <MaterialIcons name="lock" size={20} color="#6200ee" style={styles.labelIcon} />
+              <Text style={styles.label}>Password</Text>
+            </View>
+            <View style={styles.inputWrapper}>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter your password"
+                value={password}
+                onChangeText={(text) => {
+                  setPassword(text);
+                  setPasswordError('');
+                }}
+                secureTextEntry={!showPassword}
+              />
+              <TouchableOpacity 
+                onPress={() => setShowPassword(!showPassword)}
+                style={styles.passwordToggle}
+              >
+                <MaterialIcons 
+                  name={showPassword ? "visibility" : "visibility-off"} 
+                  size={20} 
+                  color="#6200ee" 
+                />
+              </TouchableOpacity>
+            </View>
             {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
           </View>
 
@@ -173,18 +198,32 @@ const styles = StyleSheet.create({
   inputContainer: {
     marginBottom: 20,
   },
-  label: {
-    fontSize: 16,
-    color: '#333',
+  labelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 8,
   },
-  input: {
+  labelIcon: {
+    marginRight: 8,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
+    paddingHorizontal: 12,
+  },
+  input: {
+    flex: 1,
     padding: 12,
     fontSize: 16,
+    borderWidth: 0,
+  },
+  label: {
+    fontSize: 16,
+    color: '#333',
   },
   errorText: {
     color: 'red',
@@ -224,6 +263,13 @@ const styles = StyleSheet.create({
   forgotPasswordText: {
     color: '#6200ee',
     fontSize: 14,
+  },
+  iconContainer: {
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  passwordToggle: {
+    padding: 8,
   },
 });
 

@@ -129,6 +129,19 @@ const HomeScreen = () => {
       <View style={styles.toolsSection}>
         <Text style={styles.sectionTitle}>Financial Tools</Text>
         <View style={styles.toolsGrid}>
+
+        <TouchableOpacity
+            style={styles.toolCard}
+            onPress={() => navigation.navigate('Borrow')}
+          >
+            <View style={styles.toolIcon}>
+              <Ionicons name="wallet-outline" size={24} color="#6200ee" />
+            </View>
+            <Text style={styles.toolTitle}>Borrow Money</Text>
+            <Text style={styles.toolDescription}>Track borrowed money and dues</Text>
+          </TouchableOpacity>
+
+
           <TouchableOpacity
             style={styles.toolCard}
             onPress={() => navigation.navigate('DiscountCalculator')}
@@ -153,10 +166,23 @@ const HomeScreen = () => {
 
           <TouchableOpacity
             style={styles.toolCard}
-            onPress={() => navigation.navigate('MonthlyExpenses')}
+            onPress={() => navigation.navigate('EMI')}
           >
             <View style={styles.toolIcon}>
               <Ionicons name="calendar-outline" size={24} color="#6200ee" />
+            </View>
+            <Text style={styles.toolTitle}>EMI Management</Text>
+            <Text style={styles.toolDescription}>Track and manage your EMIs</Text>
+          </TouchableOpacity>
+
+         
+
+          <TouchableOpacity
+            style={styles.toolCard}
+            onPress={() => navigation.navigate('MonthlyExpenses')}
+          >
+            <View style={styles.toolIcon}>
+              <Ionicons name="bar-chart-outline" size={24} color="#6200ee" />
             </View>
             <Text style={styles.toolTitle}>Monthly Expenses</Text>
             <Text style={styles.toolDescription}>Track and analyze monthly spending</Text>
@@ -256,33 +282,10 @@ const HomeScreen = () => {
           style={styles.actionButton}
           onPress={() => navigation.navigate('AddTransaction')}
         >
-          <Ionicons name="add-circle" size={24} color="#6200ee" />
+          <Ionicons name="add-circle" size={65} color="#6200ee" />
           <Text style={styles.actionText}>Add Transaction</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => navigation.navigate('Borrow')}
-        >
-          <Ionicons name="cash" size={24} color="#6200ee" />
-          <Text style={styles.actionText}>Borrow Money</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => navigation.navigate('Budget')}
-        >
-          <Ionicons name="wallet" size={24} color="#6200ee" />
-          <Text style={styles.actionText}>Budget</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={styles.actionButton}
-          onPress={() => navigation.navigate('LoanCalculator')}
-        >
-          <Ionicons name="calculator" size={24} color="#6200ee" />
-          <Text style={styles.actionText}>Loan Calculator</Text>
-        </TouchableOpacity>
       </View>
 
      

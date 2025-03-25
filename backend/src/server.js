@@ -37,6 +37,9 @@ app.use((req, res, next) => {
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/transactions', require('./routes/transactionRoutes'));
 app.use('/api/email', require('./routes/emailRoutes'));
+app.use('/api/borrows', require('./routes/borrowRoutes'));
+// TODO: Implement EMI routes
+// app.use('/api/emi', require('./routes/emiRoutes'));
 
 // Default route
 app.get('/', (req, res) => {

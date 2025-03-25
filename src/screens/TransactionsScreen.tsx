@@ -11,9 +11,10 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
-import { MainStackParamList } from '../navigation/AppNavigator';
+import { MainStackParamList } from '../navigation/types';
 import { getTransactions, TransactionType } from '../redux/slices/transactionSlice';
 import { RootState, AppDispatch } from '../redux/store';
+import Header from '../components/Header';
 
 type TransactionsScreenNavigationProp = StackNavigationProp<MainStackParamList>;
 
@@ -108,6 +109,7 @@ const TransactionsScreen: React.FC<TransactionsScreenProps> = ({ navigation }) =
 
   return (
     <View style={styles.container}>
+      <Header title="Transactions" />
       <View style={styles.filterContainer}>
         <TouchableOpacity
           style={[styles.filterButton, filter === 'all' && styles.activeFilterButton]}
