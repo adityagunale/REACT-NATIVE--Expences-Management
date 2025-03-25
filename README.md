@@ -12,7 +12,7 @@ A React Native mobile application built with Expo for managing personal finances
 - **User Profile**: Manage your account settings
 
 
-## Tech Stack
+
 ### Frontend
 - React Native
 - Expo
