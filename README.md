@@ -11,7 +11,7 @@ A React Native mobile application built with Expo for managing personal finances
 - **Transaction Categories**: Categorize your transactions for better organization
 - **User Profile**: Manage your account settings
 
-## Tech Stack
+
 
 ### Frontend
 - React Native
