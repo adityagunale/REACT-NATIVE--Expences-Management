@@ -1,6 +1,6 @@
 # Expenses Management App
 
- Native mobile application built with Expo for managing personal finances. Track your income and expenses, view your balance, and manage your financial transactions.
+ A React Native mobile application built with Expo for managing personal finances. Track your income and expenses, view your balance, and manage your financial transactions.
 
 
 ## Features
